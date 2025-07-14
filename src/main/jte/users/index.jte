@@ -6,7 +6,7 @@
         <h2>${page.getHeader()}</h2>
         <a href="/users/build">New User</a>
         @for(var user : page.getUsers())
-            <div>${user.getFirstName()} ${user.getLastName()}</div>
+            <p><a href="users/${user.getId()}">${user.getFirstName()} ${user.getLastName()}</a></p>
         @endfor
     `
 )

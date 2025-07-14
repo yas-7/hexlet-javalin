@@ -5,6 +5,7 @@ import io.javalin.http.NotFoundResponse;
 import io.javalin.rendering.template.JavalinJte;
 import org.example.hexlet.dto.courses.CoursePage;
 import org.example.hexlet.dto.courses.CoursesPage;
+import org.example.hexlet.dto.users.UserPage;
 import org.example.hexlet.dto.users.UsersPage;
 import org.example.hexlet.model.Course;
 import org.example.hexlet.model.User;
@@ -75,6 +76,22 @@ public class HelloWorld {
         app.get("/users", ctx -> {
             UsersPage page = new UsersPage(USERS, "User's page header");
             ctx.render("users/index.jte", model("page", page));
+        });
+
+
+        app.get("/users/{id}", ctx -> {
+//            var id = ctx.pathParam("id");
+//            ctx.contentType("html");
+//            ctx.result("<h1>" + id + "</h1>");
+////            open http://localhost:7070/users/%3Cscript%3Ealert('attack!')%3B%3C%2Fscript%3E
+
+            long id = ctx.pathParamAsClass("id", Long.class).get();
+            var user = USERS.stream()
+                    .filter(c -> c.getId().equals(id))
+                    .findFirst()
+                    .orElseThrow(() -> new NotFoundResponse("USER " + id + " not found"));
+            var page = new UserPage(user);
+            ctx.render("users/show.jte", model("page", page ));
         });
 
         app.start(7070); // Стартуем веб-сервер
