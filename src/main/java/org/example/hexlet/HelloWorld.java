@@ -5,7 +5,9 @@ import io.javalin.http.NotFoundResponse;
 import io.javalin.rendering.template.JavalinJte;
 import org.example.hexlet.dto.courses.CoursePage;
 import org.example.hexlet.dto.courses.CoursesPage;
+import org.example.hexlet.dto.users.UsersPage;
 import org.example.hexlet.model.Course;
+import org.example.hexlet.model.User;
 
 import java.util.List;
 import java.util.Map;
@@ -13,6 +15,10 @@ import java.util.Map;
 import static io.javalin.rendering.template.TemplateUtil.model;
 
 public class HelloWorld {
+    private static final List<User> USERS = List.of(
+            new User(1L, "Ann", "Marble"),
+            new User(2L, "Peter", "Scott")
+    );
     private static final List<Course> COURSES = List.of(
             new Course(1L, "oop", "some cool course about oop"),
             new Course(2L, "lambda", "some cool course about lambda")
@@ -31,7 +37,7 @@ public class HelloWorld {
         // Описываем, что загрузится по адресу /
         app.get("/", ctx -> ctx.render("index.jte"));
 
-        app.get("/users", ctx -> ctx.result("GET /users"));
+//        app.get("/users", ctx -> ctx.result("GET /users"));
         app.post("/users", ctx -> ctx.result("POST /users"));
         app.get("/hello", ctx -> {
             var name = ctx.queryParam("name");
@@ -57,13 +63,18 @@ public class HelloWorld {
         });
 
         app.get("/courses/{id}", ctx -> {
-            var id = ctx.pathParamAsClass("id", Long.class).get();
+            long id = ctx.pathParamAsClass("id", Long.class).get();
             var course = COURSES.stream()
                     .filter(c -> c.getId().equals(id))
                     .findFirst()
                     .orElseThrow(() -> new NotFoundResponse("Course " + id + " not found"));
             var page = new CoursePage(course);
             ctx.render("courses/show.jte", model("page", page));
+        });
+
+        app.get("/users", ctx -> {
+            UsersPage page = new UsersPage(USERS, "User's page header");
+            ctx.render("users/index.jte", model("page", page));
         });
 
         app.start(7070); // Стартуем веб-сервер
