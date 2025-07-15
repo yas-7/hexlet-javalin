@@ -9,6 +9,7 @@ import org.example.hexlet.dto.users.UserPage;
 import org.example.hexlet.dto.users.UsersPage;
 import org.example.hexlet.model.Course;
 import org.example.hexlet.model.User;
+import org.example.hexlet.repository.UserRepository;
 
 import java.util.List;
 import java.util.Map;
@@ -16,10 +17,6 @@ import java.util.Map;
 import static io.javalin.rendering.template.TemplateUtil.model;
 
 public class HelloWorld {
-    private static final List<User> USERS = List.of(
-            new User(1L, "Ann", "Marble"),
-            new User(2L, "Peter", "Scott")
-    );
     private static final List<Course> COURSES = List.of(
             new Course(1L, "oop", "some cool course about oop"),
             new Course(2L, "lambda", "some cool course about lambda"),
@@ -41,7 +38,7 @@ public class HelloWorld {
         app.get("/", ctx -> ctx.render("index.jte"));
 
 //        app.get("/users", ctx -> ctx.result("GET /users"));
-        app.post("/users", ctx -> ctx.result("POST /users"));
+//        app.post("/users", ctx -> ctx.result("POST /users"));
         app.get("/hello", ctx -> {
             var name = ctx.queryParam("name");
             ctx.result("Hello, " + name + "!");
@@ -65,7 +62,7 @@ public class HelloWorld {
             List<Course> courses;
             if (term != null) {
                 courses = COURSES.stream()
-                        .filter(c -> c.getName().contains(term.toLowerCase()) || c.getDescription().contains(term.toLowerCase()))
+                        .filter(c -> c.getName().toLowerCase().contains(term.toLowerCase()) || c.getDescription().contains(term.toLowerCase()))
                         .toList();
             } else {
                 courses = COURSES;
@@ -86,8 +83,29 @@ public class HelloWorld {
         });
 
         app.get("/users", ctx -> {
-            UsersPage page = new UsersPage(USERS, "User's page header");
+            String term = ctx.queryParam("term");
+            List<User> users;
+            if (term != null) {
+                users = UserRepository.search(term);
+            } else {
+                users = UserRepository.getEntities();
+            }
+
+            UsersPage page = new UsersPage(users, "User's page header", term);
             ctx.render("users/index.jte", model("page", page));
+        });
+
+        app.get("/users/build", ctx -> ctx.render("users/build.jte"));
+
+        app.post("/users", ctx -> {
+            var name = ctx.formParam("name").trim();
+            var email = ctx.formParam("email").trim().toLowerCase();
+            var password = ctx.formParam("password");
+            var passwordConfirmation = ctx.formParam("passwordConfirmation");
+
+            var user = new User(name, email, password);
+            UserRepository.save(user);
+            ctx.redirect("/users");
         });
 
 
@@ -98,10 +116,9 @@ public class HelloWorld {
 ////            open http://localhost:7070/users/%3Cscript%3Ealert('attack!')%3B%3C%2Fscript%3E
 
             long id = ctx.pathParamAsClass("id", Long.class).get();
-            var user = USERS.stream()
-                    .filter(c -> c.getId().equals(id))
-                    .findFirst()
-                    .orElseThrow(() -> new NotFoundResponse("USER " + id + " not found"));
+            var user = UserRepository
+                        .find(id)
+                        .orElseThrow(() -> new NotFoundResponse("USER " + id + " not found"));
             var page = new UserPage(user);
             ctx.render("users/show.jte", model("page", page));
         });

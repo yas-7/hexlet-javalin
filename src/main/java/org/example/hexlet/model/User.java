@@ -4,19 +4,24 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 
+import java.time.LocalDateTime;
+
 @Getter
 @Setter
 @ToString
-public class User {
+public final class User {
     private Long id;
 
     @ToString.Include
-    private String firstName;
-    private String lastName;
+    private String name;
 
-    public User(Long id, String firstName, String lastName) {
-        this.id = id;
-        this.firstName = firstName;
-        this.lastName = lastName;
+    private String email;
+    private String password;
+    private LocalDateTime createdAt;
+
+    public User(String name, String email, String password) {
+        this.name = name;
+        this.email = email;
+        this.password = password;
     }
 }

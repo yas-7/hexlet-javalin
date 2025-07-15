@@ -3,8 +3,8 @@
 
 @template.layout.page(
     content = @`
-		<h2>${page.getUser().getFirstName()} ${page.getUser().getLastName()}</h2>
-		<p>${page.getUser().getId()}</p>
-
+		<h2>${page.getUser().getName()}</h2>
+		<p>Created at: ${page.getUser().getCreatedAt().toString()} ID: ${page.getUser().getId()}</p>
+		<p>${page.getUser().getEmail()}</p>
     `
 )

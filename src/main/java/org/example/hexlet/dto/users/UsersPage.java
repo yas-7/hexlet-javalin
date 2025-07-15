@@ -11,4 +11,5 @@ import java.util.List;
 public class UsersPage {
     private List<User> users;
     private String header;
+    private String term;
 }
