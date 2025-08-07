@@ -84,7 +84,7 @@ public class HelloWorld {
             ctx.render("courses/show.jte", model("page", page));
         });
 
-        app.get("/users", ctx -> {
+        app.get(NamedRoutes.usersPath(), ctx -> {
             String term = ctx.queryParam("term");
             List<User> users;
             if (term != null) {
@@ -97,12 +97,12 @@ public class HelloWorld {
             ctx.render("users/index.jte", model("page", page));
         });
 
-        app.get("/users/build", ctx -> {
+        app.get(NamedRoutes.buildUserPath(), ctx -> {
             var page = new BuildUserPage();
             ctx.render("users/build.jte", model("page", page));
         });
 
-        app.post("/users", ctx -> {
+        app.post(NamedRoutes.usersPath(), ctx -> {
             var name = ctx.formParam("name").trim();
             var email = ctx.formParam("email").trim().toLowerCase();
 
@@ -114,7 +114,7 @@ public class HelloWorld {
                         .get();
                 var user = new User(name, email, password);
                 UserRepository.save(user);
-                ctx.redirect("/users");
+                ctx.redirect(NamedRoutes.usersPath());
             } catch (ValidationException e) {
                 var page = new BuildUserPage(name, email, e.getErrors());
                 System.out.println(e.getErrors());
@@ -122,7 +122,7 @@ public class HelloWorld {
             }
         });
 
-        app.get("/users/{id}", ctx -> {
+        app.get(NamedRoutes.userPath("{id}"), ctx -> {
 //            var id = ctx.pathParam("id");
 //            ctx.contentType("html");
 //            ctx.result("<h1>" + id + "</h1>");
