@@ -65,8 +65,10 @@ public class HelloWorld {
                 courses = COURSES;
             }
 
-            CoursesPage page = new CoursesPage(courses, header, term);
+            boolean visited = Boolean.parseBoolean(ctx.cookie("visited"));
+            CoursesPage page = new CoursesPage(courses, header, term, visited);
             ctx.render("courses/index.jte", model("page", page));
+            ctx.cookie("visited", String.valueOf(true));
         });
 
         app.get("/courses/{id}", ctx -> {

@@ -8,6 +8,10 @@
 			<input type="submit" value="Search" />
 		</form>
 
+      @if(!page.isVisited())
+        Это сообщение показывается только один раз. Если вы хотите увидеть его снова, сотрите куки
+      @endif
+
         @if(page.getCourses().isEmpty())
 			<p>Пока не добавлено ни одного курса</p>
 		@else
