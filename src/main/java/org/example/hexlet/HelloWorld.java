@@ -3,15 +3,10 @@ package org.example.hexlet;
 import io.javalin.Javalin;
 import io.javalin.http.NotFoundResponse;
 import io.javalin.rendering.template.JavalinJte;
-import io.javalin.validation.ValidationException;
+import org.example.hexlet.controller.UsersController;
 import org.example.hexlet.dto.courses.CoursePage;
 import org.example.hexlet.dto.courses.CoursesPage;
-import org.example.hexlet.dto.users.BuildUserPage;
-import org.example.hexlet.dto.users.UserPage;
-import org.example.hexlet.dto.users.UsersPage;
 import org.example.hexlet.model.Course;
-import org.example.hexlet.model.User;
-import org.example.hexlet.repository.UserRepository;
 
 import java.util.List;
 import java.util.Map;
@@ -84,57 +79,20 @@ public class HelloWorld {
             ctx.render("courses/show.jte", model("page", page));
         });
 
-        app.get(NamedRoutes.usersPath(), ctx -> {
-            String term = ctx.queryParam("term");
-            List<User> users;
-            if (term != null) {
-                users = UserRepository.search(term);
-            } else {
-                users = UserRepository.getEntities();
-            }
+        app.get(NamedRoutes.usersPath(), UsersController::index);
 
-            UsersPage page = new UsersPage(users, "User's page header", term);
-            ctx.render("users/index.jte", model("page", page));
-        });
+        app.get(NamedRoutes.buildUserPath(), UsersController::build);
 
-        app.get(NamedRoutes.buildUserPath(), ctx -> {
-            var page = new BuildUserPage();
-            ctx.render("users/build.jte", model("page", page));
-        });
+        app.post(NamedRoutes.usersPath(), UsersController::create);
 
-        app.post(NamedRoutes.usersPath(), ctx -> {
-            var name = ctx.formParam("name").trim();
-            var email = ctx.formParam("email").trim().toLowerCase();
-
-            try {
-                var passwordConfirmation = ctx.formParam("passwordConfirmation");
-                var password = ctx.formParamAsClass("password", String.class)
-                        .check(value -> value.equals(passwordConfirmation), "Пароли не совпадают")
-                        .check(value -> value.length() > 3, "Длина пароля должна быть не менее 3х символов")
-                        .get();
-                var user = new User(name, email, password);
-                UserRepository.save(user);
-                ctx.redirect(NamedRoutes.usersPath());
-            } catch (ValidationException e) {
-                var page = new BuildUserPage(name, email, e.getErrors());
-                System.out.println(e.getErrors());
-                ctx.render("users/build.jte", model("page", page));
-            }
-        });
-
-        app.get(NamedRoutes.userPath("{id}"), ctx -> {
+        app.get(NamedRoutes.userPath("{id}"), UsersController::show);
+//            ctx -> {
 //            var id = ctx.pathParam("id");
 //            ctx.contentType("html");
 //            ctx.result("<h1>" + id + "</h1>");
-////            open http://localhost:7070/users/%3Cscript%3Ealert('attack!')%3B%3C%2Fscript%3E
+//            open http://localhost:7070/users/%3Cscript%3Ealert('attack!')%3B%3C%2Fscript%3E });
 
-            long id = ctx.pathParamAsClass("id", Long.class).get();
-            var user = UserRepository
-                        .find(id)
-                        .orElseThrow(() -> new NotFoundResponse("USER " + id + " not found"));
-            var page = new UserPage(user);
-            ctx.render("users/show.jte", model("page", page));
-        });
+        app.delete(NamedRoutes.userPath("{id}"), UsersController::destroy);
 
         app.start(7070); // Стартуем веб-сервер
     }
