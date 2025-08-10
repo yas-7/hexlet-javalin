@@ -1,5 +1,5 @@
 @import org.example.hexlet.dto.users.UsersPage
-@import org.example.hexlet.NamedRoutes
+@import org.example.hexlet.util.NamedRoutes
 @param UsersPage page
 
 @template.layout.page(
