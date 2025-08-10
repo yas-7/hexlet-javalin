@@ -1,5 +1,7 @@
 @import gg.jte.Content
+@import org.example.hexlet.dto.BasePage
 @param Content content
+@param BasePage page = null
 
 <!doctype html>
 <html lang="en">
@@ -18,6 +20,9 @@
     	</header>
 
         <main>
+            @if(page != null && page.getFlash() != null)
+                <i>${page.getFlash()}</i>
+            @endif
         	<h1>specific content part</h1>
         	${content}
         </main>

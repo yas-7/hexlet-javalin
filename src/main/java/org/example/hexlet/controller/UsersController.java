@@ -25,7 +25,8 @@ public class UsersController {
         }
         String flash = ctx.consumeSessionAttribute("flash");
 
-        UsersPage page = new UsersPage(users, "User's page header", term, flash);
+        UsersPage page = new UsersPage(users, "User's page header", term);
+        page.setFlash(flash);
         ctx.render("users/index.jte", model("page", page));
     }
 

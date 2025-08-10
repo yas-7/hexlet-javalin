@@ -3,10 +3,8 @@
 @param UsersPage page
 
 @template.layout.page(
+    page = page,
     content = @`
-        @if(page.getFlash() != null)
-            <i>${page.getFlash()}</i>
-        @endif
         <h2>${page.getHeader()}</h2>
         <h3>Search form</h3>
 		<form action="${NamedRoutes.usersPath()}" method="get">
