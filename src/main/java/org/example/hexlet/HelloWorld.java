@@ -3,10 +3,13 @@ package org.example.hexlet;
 import io.javalin.Javalin;
 import io.javalin.http.NotFoundResponse;
 import io.javalin.rendering.template.JavalinJte;
+import org.example.hexlet.controller.SessionsController;
 import org.example.hexlet.controller.UsersController;
+import org.example.hexlet.dto.MainPage;
 import org.example.hexlet.dto.courses.CoursePage;
 import org.example.hexlet.dto.courses.CoursesPage;
 import org.example.hexlet.model.Course;
+import org.example.hexlet.util.NamedRoutes;
 
 import java.util.List;
 import java.util.Map;
@@ -32,7 +35,19 @@ public class HelloWorld {
             config.fileRenderer(new JavalinJte());
         });
         // Описываем, что загрузится по адресу /
-        app.get("/", ctx -> ctx.render("index.jte"));
+        // app.get("/", ctx -> ctx.render("index.jte"));
+        // Отображение формы логина "/sessions/build"
+        app.get(NamedRoutes.sessionBuildPath(), SessionsController::build);
+        // Процесс логина "/sessions"
+        app.post(NamedRoutes.sessionsPath(), SessionsController::create);
+        // Процесс выхода из аккаунта "/sessions"
+        app.delete(NamedRoutes.sessionsPath(), SessionsController::destroy);
+
+        app.get("/", ctx ->{
+            var currentUser = ctx.sessionAttribute("currentUser");
+            var page = new MainPage((String) currentUser);
+            ctx.render("index.jte", model("page", page));
+        });
 
 //        app.get("/users", ctx -> ctx.result("GET /users"));
 //        app.post("/users", ctx -> ctx.result("POST /users"));
