@@ -23,8 +23,9 @@ public class UsersController {
         } else {
             users = UserRepository.getEntities();
         }
+        String flash = ctx.consumeSessionAttribute("flash");
 
-        UsersPage page = new UsersPage(users, "User's page header", term);
+        UsersPage page = new UsersPage(users, "User's page header", term, flash);
         ctx.render("users/index.jte", model("page", page));
     }
 
@@ -54,6 +55,7 @@ public class UsersController {
                     .get();
             var user = new User(name, email, password);
             UserRepository.save(user);
+            ctx.sessionAttribute("flash", "USER HAS BEEN CREATED!");
             ctx.redirect(NamedRoutes.usersPath());
         } catch (ValidationException e) {
             var page = new BuildUserPage(name, email, e.getErrors());
