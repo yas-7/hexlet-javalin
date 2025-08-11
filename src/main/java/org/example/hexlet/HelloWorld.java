@@ -1,34 +1,52 @@
 package org.example.hexlet;
 
+import com.zaxxer.hikari.HikariConfig;
+import com.zaxxer.hikari.HikariDataSource;
 import io.javalin.Javalin;
 import io.javalin.http.NotFoundResponse;
 import io.javalin.rendering.template.JavalinJte;
+import org.example.hexlet.controller.CoursesController;
 import org.example.hexlet.controller.SessionsController;
 import org.example.hexlet.controller.UsersController;
 import org.example.hexlet.dto.MainPage;
-import org.example.hexlet.dto.courses.CoursePage;
-import org.example.hexlet.dto.courses.CoursesPage;
-import org.example.hexlet.model.Course;
+import org.example.hexlet.repository.BaseRepository;
 import org.example.hexlet.util.NamedRoutes;
 
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import static io.javalin.rendering.template.TemplateUtil.model;
 
 public class HelloWorld {
-    private static final List<Course> COURSES = List.of(
-            new Course(1L, "oop", "some cool course about oop"),
-            new Course(2L, "lambda", "some cool course about lambda"),
-            new Course(2L, "oop principles", "The core principles of OOP are encapsulation, inheritance, polymorphism, and abstraction")
-    );
+
     private static final List<Map<String, String>> COMPANIES = List.of(
             Map.of("phone", "(900) 202-4560", "name", "John & Brothers", "id", "1"),
             Map.of("phone", "(505) 640-3456", "name", "Morar-Wehner", "id", "6"),
             Map.of("phone", "(959) 202-6260", "name", "O'Conner and Sons", "id", "2")
     );
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws SQLException {
+        var hikariConfig = new HikariConfig();
+        hikariConfig.setJdbcUrl("jdbc:h2:mem:hexlet_project;DB_CLOSE_DELAY=-1;");
+
+        var dataSource = new HikariDataSource(hikariConfig);
+        // Получаем путь до файла в src/main/resources
+        var url = HelloWorld.class.getClassLoader().getResourceAsStream("schema.sql");
+        var sql = new BufferedReader(new InputStreamReader(url))
+                .lines().collect(Collectors.joining("\n"));
+
+        // Получаем соединение, создаем стейтмент и выполняем запрос
+        try (var connection = dataSource.getConnection()) {
+            var statement = connection.createStatement();
+            statement.execute(sql);
+        }
+
+        BaseRepository.dataSource = dataSource;
+
         // Создаем приложение
         var app = Javalin.create(config -> {
             config.bundledPlugins.enableDevLogging();
@@ -68,33 +86,11 @@ public class HelloWorld {
         });
         app.get("/companies", ctx -> ctx.json(COMPANIES));
 
-        app.get("/courses", ctx -> {
-            String header = "Курсы по программированию";
-            String term = ctx.queryParam("term");
-            List<Course> courses;
-            if (term != null) {
-                courses = COURSES.stream()
-                        .filter(c -> c.getName().toLowerCase().contains(term.toLowerCase()) || c.getDescription().contains(term.toLowerCase()))
-                        .toList();
-            } else {
-                courses = COURSES;
-            }
+        app.get(NamedRoutes.coursesPath(), CoursesController::index);
+        app.get(NamedRoutes.buildCoursePath(), CoursesController::build); // должен быть выше show
+        app.get(NamedRoutes.coursePath("{id}"), CoursesController::show);
+        app.post(NamedRoutes.coursesPath(), CoursesController::create);
 
-            boolean visited = Boolean.parseBoolean(ctx.cookie("visited"));
-            CoursesPage page = new CoursesPage(courses, header, term, visited);
-            ctx.render("courses/index.jte", model("page", page));
-            ctx.cookie("visited", String.valueOf(true));
-        });
-
-        app.get("/courses/{id}", ctx -> {
-            long id = ctx.pathParamAsClass("id", Long.class).get();
-            var course = COURSES.stream()
-                    .filter(c -> c.getId().equals(id))
-                    .findFirst()
-                    .orElseThrow(() -> new NotFoundResponse("Course " + id + " not found"));
-            var page = new CoursePage(course);
-            ctx.render("courses/show.jte", model("page", page));
-        });
 
         app.get(NamedRoutes.usersPath(), UsersController::index);
 
