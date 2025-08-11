@@ -31,7 +31,7 @@ public class HelloWorld {
 
     public static void main(String[] args) throws SQLException {
         var hikariConfig = new HikariConfig();
-        hikariConfig.setJdbcUrl("jdbc:h2:mem:hexlet_project;DB_CLOSE_DELAY=-1;");
+        hikariConfig.setJdbcUrl(getDatabaseUrl());
 
         var dataSource = new HikariDataSource(hikariConfig);
         // Получаем путь до файла в src/main/resources
@@ -109,4 +109,11 @@ public class HelloWorld {
 
         app.start(7070); // Стартуем веб-сервер
     }
+
+    private static String getDatabaseUrl() {
+        // Получаем url базы данных из переменной окружения DATABASE_URL
+        // Если она не установлена, используем базу в памяти
+        return System.getenv().getOrDefault("DATABASE_URL", "jdbc:h2:mem:project");
+    }
+
 }

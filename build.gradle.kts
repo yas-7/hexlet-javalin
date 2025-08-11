@@ -4,6 +4,7 @@ import org.gradle.api.tasks.testing.logging.TestLogEvent
 plugins {
 	application
 	id("io.freefair.lombok") version "8.13.1"
+	id("com.github.johnrengelman.shadow") version "8.1.1"
 }
 
 application {
@@ -18,6 +19,7 @@ repositories {
 }
 
 dependencies {
+	implementation("org.postgresql:postgresql:42.7.7")
 	implementation("com.h2database:h2:2.3.230")
 	implementation("com.zaxxer:HikariCP:7.0.0")
 	implementation("com.fasterxml.jackson.core:jackson-databind:2.16.1")
